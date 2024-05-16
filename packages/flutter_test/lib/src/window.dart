@@ -13,7 +13,6 @@ import 'package:flutter/foundation.dart';
 /// features are enabled, consider the [FakeAccessibilityFeatures.allOn]
 /// constant.
 @immutable
-// ignore: avoid_implementing_value_types
 class FakeAccessibilityFeatures implements AccessibilityFeatures {
   /// Creates a test instance of [AccessibilityFeatures].
   ///
@@ -309,6 +308,18 @@ class TestPlatformDispatcher implements PlatformDispatcher {
   }
 
   @override
+  bool get supportsShowingSystemContextMenu => _supportsShowingSystemContextMenu ?? _platformDispatcher.supportsShowingSystemContextMenu;
+  bool? _supportsShowingSystemContextMenu;
+  set supportsShowingSystemContextMenu(bool value) { // ignore: avoid_setters_without_getters
+    _supportsShowingSystemContextMenu = value;
+  }
+
+  /// Resets [supportsShowingSystemContextMenu] to the default value.
+  void resetSupportsShowingSystemContextMenu() {
+    _supportsShowingSystemContextMenu = null;
+  }
+
+  @override
   bool get brieflyShowPassword => _brieflyShowPasswordTestValue ?? _platformDispatcher.brieflyShowPassword;
   bool? _brieflyShowPasswordTestValue;
   /// Hides the real [brieflyShowPassword] and reports the given
@@ -459,6 +470,7 @@ class TestPlatformDispatcher implements PlatformDispatcher {
     clearTextScaleFactorTestValue();
     clearNativeSpellCheckServiceDefined();
     resetBrieflyShowPassword();
+    resetSupportsShowingSystemContextMenu();
     resetInitialLifecycleState();
     resetSystemFontFamily();
   }
@@ -612,9 +624,6 @@ class TestPlatformDispatcher implements PlatformDispatcher {
 
   @override
   void updateSemantics(SemanticsUpdate update) {
-    // Using the deprecated method to maintain backwards compatibility during
-    // the multi-view transition window.
-    // ignore: deprecated_member_use
     _platformDispatcher.updateSemantics(update);
   }
 
