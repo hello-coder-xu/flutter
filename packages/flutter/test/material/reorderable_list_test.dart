@@ -1926,6 +1926,119 @@ void main() {
     expect(offsetForFastScroller / offsetForSlowScroller, fastVelocityScalar / slowVelocityScalar);
   });
 
+group("ReorderableListView throws NPE if any it's child has height > container height", () {
+    testWidgets('ReorderableListView Axis vertical', (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: RecorderableListViewDemo(
+          asxis: Axis.vertical,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final RenderBox renderFirstItem0 = tester.renderObject(find.byKey(const Key('item0'))) as RenderBox;
+      final Offset offsetFirstItem0 = renderFirstItem0.localToGlobal(Offset.zero);
+
+      final RenderBox renderFirstItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetFirstItem1 = renderFirstItem1.localToGlobal(Offset.zero);
+
+      expect(offsetFirstItem0, Offset.zero);
+      expect(offsetFirstItem1, const Offset(0, 200));
+
+      // drap item1 to item0
+      final TestGesture drag = await tester.startGesture(Offset(0, offsetFirstItem1.dy + 10));
+      await tester.pump(kLongPressTimeout + kPressTimeout);
+      await drag.moveTo(const Offset(200, 90));
+      await drag.up();
+      await tester.pumpAndSettle();
+
+      final RenderBox renderSecondItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetSecondItem1 = renderSecondItem1.localToGlobal(Offset.zero);
+      expect(offsetSecondItem1, Offset.zero);
+    });
+    testWidgets('ReorderableListView Axis horizontal', (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: RecorderableListViewDemo(),
+      ));
+      await tester.pumpAndSettle();
+
+      final RenderBox renderFirstItem0 = tester.renderObject(find.byKey(const Key('item0'))) as RenderBox;
+      final Offset offsetFirstItem0 = renderFirstItem0.localToGlobal(Offset.zero);
+
+      final RenderBox renderFirstItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetFirstItem1 = renderFirstItem1.localToGlobal(Offset.zero);
+
+      expect(offsetFirstItem0, Offset.zero);
+      expect(offsetFirstItem1, const Offset(200, 0));
+
+      // drap item1 to item0
+      final TestGesture drag = await tester.startGesture(Offset(0, offsetFirstItem1.dx + 10));
+      await tester.pump(kLongPressTimeout + kPressTimeout);
+      await drag.moveTo(const Offset(0, 90));
+      await drag.up();
+      await tester.pumpAndSettle();
+
+      final RenderBox renderSecondItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetSecondItem1 = renderSecondItem1.localToGlobal(Offset.zero);
+      expect(offsetSecondItem1, const Offset(200, 0));
+    });
+    testWidgets('ReorderableListView.Builder Axis vertical', (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: RecorderableListViewDemo(
+          asxis: Axis.vertical,
+          isReorderableListViewType: false,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final RenderBox renderFirstItem0 = tester.renderObject(find.byKey(const Key('item0'))) as RenderBox;
+      final Offset offsetFirstItem0 = renderFirstItem0.localToGlobal(Offset.zero);
+
+      final RenderBox renderFirstItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetFirstItem1 = renderFirstItem1.localToGlobal(Offset.zero);
+
+      expect(offsetFirstItem0, Offset.zero);
+      expect(offsetFirstItem1, const Offset(0, 200));
+
+      // drap item1 to item0
+      final TestGesture drag = await tester.startGesture(Offset(0, offsetFirstItem1.dy + 10));
+      await tester.pump(kLongPressTimeout + kPressTimeout);
+      await drag.moveTo(const Offset(200, 90));
+      await drag.up();
+      await tester.pumpAndSettle();
+
+      final RenderBox renderSecondItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetSecondItem1 = renderSecondItem1.localToGlobal(Offset.zero);
+      expect(offsetSecondItem1, Offset.zero);
+    });
+    testWidgets('ReorderableListView.Builder Axis horizontal', (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: RecorderableListViewDemo(
+          isReorderableListViewType: false,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final RenderBox renderFirstItem0 = tester.renderObject(find.byKey(const Key('item0'))) as RenderBox;
+      final Offset offsetFirstItem0 = renderFirstItem0.localToGlobal(Offset.zero);
+
+      final RenderBox renderFirstItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetFirstItem1 = renderFirstItem1.localToGlobal(Offset.zero);
+
+      expect(offsetFirstItem0, Offset.zero);
+      expect(offsetFirstItem1, const Offset(200, 0));
+
+      // drap item1 to item0
+      final TestGesture drag = await tester.startGesture(Offset(0, offsetFirstItem1.dx + 10));
+      await tester.pump(kLongPressTimeout + kPressTimeout);
+      await drag.moveTo(const Offset(0, 90));
+      await drag.up();
+      await tester.pumpAndSettle();
+
+      final RenderBox renderSecondItem1 = tester.renderObject(find.byKey(const Key('item1'))) as RenderBox;
+      final Offset offsetSecondItem1 = renderSecondItem1.localToGlobal(Offset.zero);
+      expect(offsetSecondItem1, const Offset(200, 0));
+    });
+  });
 }
 
 Future<void> longPressDrag(WidgetTester tester, Offset start, Offset end) async {
@@ -1959,6 +2072,91 @@ class _StatefulState extends State<_Stateful> {
           onChanged: (bool? newValue) => checked = newValue,
         ),
       ),
+    );
+  }
+}
+
+
+class RecorderableListViewDemo extends StatefulWidget {
+  const RecorderableListViewDemo({
+    super.key,
+    this.asxis = Axis.horizontal,
+    this.isReorderableListViewType = true,
+  });
+
+  final Axis asxis;
+  final bool isReorderableListViewType;
+
+  @override
+  State<RecorderableListViewDemo> createState() => _RecorderableListViewDemoState();
+}
+
+class _RecorderableListViewDemoState extends State<RecorderableListViewDemo> {
+  List<Map<String, double>> itemList = <Map<String, double>>[];
+
+  double screenWidthOrHeight = 0;
+
+  bool get isVertical => widget.asxis == Axis.vertical;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      screenWidthOrHeight = isVertical ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width;
+      setState(() {
+        itemList = <Map<String, double>>[
+          <String, double>{'item0': 200},
+          <String, double>{'item1': screenWidthOrHeight + 100},
+        ];
+      });
+    });
+  }
+
+  void handleReorder(int fromIndex, int toIndex) {
+    setState(() {
+      if (toIndex > fromIndex) {
+        toIndex -= 1;
+      }
+      itemList.insert(toIndex, itemList.removeAt(fromIndex));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: widget.isReorderableListViewType ? _buildReorderableListView() : _buildReorderableListViewBuilder(),
+    );
+  }
+
+  Widget _buildReorderableListView() {
+    return ReorderableListView(
+      onReorder: handleReorder,
+      scrollDirection: widget.asxis,
+      children: itemList.map((Map<String, double> element) {
+        return _buildItemView(element);
+      }).toList(),
+    );
+  }
+
+  Widget _buildReorderableListViewBuilder() {
+    return ReorderableListView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        return _buildItemView(itemList[index]);
+      },
+      itemCount: itemList.length,
+      scrollDirection: widget.asxis,
+      onReorder: handleReorder,
+    );
+  }
+
+  Widget _buildItemView(Map<String, double> element) {
+    return Container(
+      key: Key(element.keys.first),
+      width: isVertical ? null : element.values.first,
+      height: isVertical ? element.values.first : null,
+      color: Colors.primaries[itemList.indexOf(element) % Colors.primaries.length],
+      alignment: Alignment.center,
+      child: Text(element.keys.first),
     );
   }
 }

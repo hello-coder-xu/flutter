@@ -229,11 +229,6 @@ class EdgeDraggingAutoScroller {
       scrollRenderBox.getTransformTo(null),
       Rect.fromLTWH(0, 0, scrollRenderBox.size.width, scrollRenderBox.size.height),
     );
-    assert(
-      globalRect.size.width >= _dragTargetRelatedToScrollOrigin.size.width &&
-        globalRect.size.height >= _dragTargetRelatedToScrollOrigin.size.height,
-      'Drag target size is larger than scrollable size, which may cause bouncing',
-    );
     _scrolling = true;
     double? newOffset;
     const double overDragMax = 20.0;
@@ -245,23 +240,35 @@ class EdgeDraggingAutoScroller {
 
     final double proxyStart = _offsetExtent(_dragTargetRelatedToScrollOrigin.topLeft, _scrollDirection);
     final double proxyEnd = _offsetExtent(_dragTargetRelatedToScrollOrigin.bottomRight, _scrollDirection);
+
+    double tempOverDragMax = overDragMax;
+    // Drag target size is larger than scrollable size, fix cause bouncing.
+    if (scrollable.position.pixels == 0) {
+      if (scrollable.position.axis == Axis.horizontal &&
+          globalRect.size.width <= _dragTargetRelatedToScrollOrigin.size.width) {
+        tempOverDragMax = 0;
+      } else if (scrollable.position.axis == Axis.vertical &&
+          globalRect.size.height <= _dragTargetRelatedToScrollOrigin.size.height) {
+        tempOverDragMax = 0;
+      }
+    }
     switch (_axisDirection) {
       case AxisDirection.up:
       case AxisDirection.left:
-        if (proxyEnd > viewportEnd && scrollable.position.pixels > scrollable.position.minScrollExtent) {
-          final double overDrag = math.min(proxyEnd - viewportEnd, overDragMax);
+        if (proxyEnd > viewportEnd && scrollable.position.pixels >= scrollable.position.minScrollExtent) {
+          final double overDrag = math.min(proxyEnd - viewportEnd, tempOverDragMax);
           newOffset = math.max(scrollable.position.minScrollExtent, scrollable.position.pixels - overDrag);
         } else if (proxyStart < viewportStart && scrollable.position.pixels < scrollable.position.maxScrollExtent) {
-          final double overDrag = math.min(viewportStart - proxyStart, overDragMax);
+          final double overDrag = math.min(viewportStart - proxyStart, tempOverDragMax);
           newOffset = math.min(scrollable.position.maxScrollExtent, scrollable.position.pixels + overDrag);
         }
       case AxisDirection.right:
       case AxisDirection.down:
-        if (proxyStart < viewportStart && scrollable.position.pixels > scrollable.position.minScrollExtent) {
-          final double overDrag = math.min(viewportStart - proxyStart, overDragMax);
-          newOffset = math.max(scrollable.position.minScrollExtent, scrollable.position.pixels -  overDrag);
+        if (proxyStart < viewportStart && scrollable.position.pixels >= scrollable.position.minScrollExtent) {
+          final double overDrag = math.min(viewportStart - proxyStart, tempOverDragMax);
+          newOffset = math.max(scrollable.position.minScrollExtent, scrollable.position.pixels - overDrag);
         } else if (proxyEnd > viewportEnd && scrollable.position.pixels < scrollable.position.maxScrollExtent) {
-          final double overDrag = math.min(proxyEnd - viewportEnd, overDragMax);
+          final double overDrag = math.min(proxyEnd - viewportEnd, tempOverDragMax);
           newOffset = math.min(scrollable.position.maxScrollExtent, scrollable.position.pixels + overDrag);
         }
     }
